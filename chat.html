@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Bot</title>
+    <style>
+        .container {
+            border: 2px solid #dedede;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .darker {
+            border-color: #ccc;
+            background-color: #ddd;
+        }
+
+        .container::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .container img {
+            float: left;
+            max-width: 60px;
+            width: 100%;
+            margin-right: 20px;
+            border-radius: 50%;
+        }
+
+        .container img.right {
+            float: right;
+            margin-left: 20px;
+            margin-right: 0;
+        }
+
+        .time-right {
+            float: right;
+            color: #aaa;
+        }
+
+        .time-left {
+            float: left;
+            color: #999;
+        }
+        body{
+            background-color: royalblue;
+        }
+    </style>
+</head>
+<body>
+    <div align="center">
+        <h1>Chat Bot</h1>
+    </div>
+
+    <div id="chatBox"></div>
+
+    <div>
+        <p id="typeNotifier" style="display: none;">Bot is Typing....</p>
+        <textarea id="userInput" style="height: 100px; width: 100%;" placeholder="Type a Message!"></textarea>
+    </div>
+
+    <script>
+        let availableVoices = [];
+
+        function waitForVoicesToLoad(){
+            return new Promise(resolve => {
+                let voices = speechSynthesis.getVoices()
+                if(voices.length) return resolve(voices)
+                speechSynthesis.onvoiceschanged = () => {
+                    voices = speechSynthesis.getVoices()
+                    resolve(voices)
+                }
+            })
+        }
+
+        window.addEventListener("load", async () => {
+            availableVoices = await waitForVoicesToLoad()
+            const dummy = new SpeechSynthesisUtterance(".")
+            dummy.volume = 0
+            speechSynthesis.speak(dummy)
+        })
+
+        function speak(message){
+            speechSynthesis.cancel()
+            const utterance = new SpeechSynthesisUtterance(message)
+            utterance.rate = 1
+            if (availableVoices.length > 0){
+                utterance.voice = availableVoices[2]
+            }
+            setTimeout(() => speechSynthesis.speak(utterance), 100)
+        }        
+
+        const input = document.getElementById("userInput")
+        const chatBox = document.getElementById("chatBox")
+        const typeNotifier = document.getElementById("typeNotifier")
+
+        input.addEventListener("keyup", function(event){
+            if (input.value.trim() === "") return;
+
+            const message = input.value.trim()
+            const newMessageBox = document.createElement('div');
+            newMessageBox.classList.add("container")
+            newMessageBox.innerHTML = `
+            <img src="./user.photo.webp">
+            <p>${message}</p>
+            <span class="time-right"></span>
+            `
+
+            if(event.keyCode === 13){
+                event.preventDefault();
+                input.value = ""
+                chatBox.appendChild(newMessageBox);
+                typeNotifier.style.display = "block"
+
+                let response;
+                const lower = message.toLowerCase()
+
+                if(lower.includes("hello") || lower.includes("hey") || lower.includes("wassup")){
+                    response = "Arrgh!"
+                }else if(lower.includes("day") && lower.includes("how")){
+                    response = "Thy day was good arghhhh"
+                }else if(lower.includes("you") && lower.includes("know")){
+                    response = "I dont not know what thy captain is asking?"
+                }else if(lower.includes("treasure") && lower.includes("map")){
+                    response = "Where is thy mystical treasure?"
+                }else if(lower.includes("what") && lower.includes("beautiful")){
+                    response = "The white pearl from an oyster!"
+                }else if(lower.includes("set") && lower.includes("sail")){
+                    response = "Where matey?"
+                }else if(lower.includes("best") && lower.includes("advice")){
+                    response = "Dont pick the best treasure, but pick the treasure thats best for you. Arrggggggggggggghhhhhhh!"
+                }
+                 
+
+                setTimeout( () => {
+                    const newAiResoinse = document.createElement("div")
+                    newAiResoinse.classList.add("container", "darker")
+                    newAiResoinse.innerHTML = `
+                        <img src="./ai.webp">
+                        <p>${response}</p>
+                        <span class="time-right"></span>
+                    `;
+                    chatBox.appendChild(newAiResoinse)
+                    typeNotifier.style.display="none"
+
+                    speak(response)
+                }, 3000 )
+
+            }
+        })
+    </script>
+</body>
+</html>
